@@ -1,17 +1,15 @@
 /*
-
-\n
-
-first version
-
 TO-DO LIST: 
-    - define all properties for all rooms.
-    - continueGame-value?
+    
 
+    - define all properties for all rooms.
 
     (- LOW priority: method to push new doorways into array, so that it is possible to expand the game)
+    (LOW priority:  lookAround-function: loop through different doorway for each row (instead of printing all on one line)
+)
     + FIXED! (- why error if I choose same option two times in a row? like look around, and again look around) 
-
+    + SOLVED! functionw WHICH ROOM YOU WANT TO GO, why it prints also gameloop?
+    ( - roomLoop could have option to go back to previous menu)
 */
 
 const prompts = require('prompts');
@@ -26,18 +24,16 @@ class Room {
     lookAround(){
         console.log('----------------');
         console.log('You are in the ' + this.name + this.roomView);
-        console.log('There are doorways leading to:\n' + this.doorwaysTo)
+        console.log('There are doorways leading to:\n' + this.doorwaysTo) 
         console.log('\n ----------------');
     }
-    goToRoom(){
-            }
 }
 //__________________________________________________________________
 let roomsArray = [
     new Room(
         'Entrance Room of Dungeons', 
         ' and it is a big and ramp room with broken status all around. \n',
-        'Hallway'
+        ['Hallway']
         ),
     new Room(
         'Hallway', 
@@ -55,8 +51,6 @@ let roomsArray = [
 
 currentRoom = roomsArray[0]; 
 //___________________________________________________________________
-
-
 
 async function gameLoop(currentRoom) {
     let continueGame = true;
@@ -86,7 +80,8 @@ async function gameLoop(currentRoom) {
         break;
       
       case 'gotoroom':
-        currentRoom.increaseSpeed();
+        roomLoop(currentRoom);
+        continueGame = false; // stops gameloop running!
         break;
       
       case 'attack':
@@ -102,6 +97,42 @@ async function gameLoop(currentRoom) {
       gameLoop(currentRoom);
     }    
 }
+//__________________________________________________________________
+
+async function roomLoop(currentRoom) {
+    let continueGame = true;
+    
+    //these below need to be modidied to that they are flexible for different rooms!
+    // loop through as many times as this current room HAS items in the doorways-array :)
+    const roomChoices = [
+            { title: currentRoom.doorwaysTo[0], value: currentRoom.doorwaysTo[0]},
+        ];
+    }
+const response = await prompts({
+    type: 'select',
+    name: 'value',
+    message: 'Which room you want to go to?',
+    choices: roomChoices
+  });
+
+  // Deal with the selected value
+  console.log('You move to ' + response.value);
+  switch(response.value) {
+    case currentRoom.doorwaysTo[0]: //hallway
+        currentRoom = roomsArray[1];
+        continueGame = true;
+        break;
+    
+    case 'Hallway':
+        currentRoom = roomsArray[1];
+        break;
+    }    
+    if(continueGame) {
+        gameLoop(currentRoom);
+      }   
+          
+}
+
 
 
 
