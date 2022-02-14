@@ -1,15 +1,13 @@
 /*
 TO-DO LIST: 
-    
-
-    - define all properties for all rooms.
+        - define all properties for all rooms.
 
     (- LOW priority: method to push new doorways into array, so that it is possible to expand the game)
     (LOW priority:  lookAround-function: loop through different doorway for each row (instead of printing all on one line)
 )
     + FIXED! (- why error if I choose same option two times in a row? like look around, and again look around) 
     + SOLVED! functionw WHICH ROOM YOU WANT TO GO, why it prints also gameloop?
-    ( - roomLoop could have option to go back to previous menu)
+    ( LOW priority- roomLoop could have option to go back to previous menu)
 */
 
 const prompts = require('prompts');
@@ -25,6 +23,12 @@ class Room {
         console.log('----------------');
         console.log('You are in the ' + this.name + this.roomView);
         console.log('There are doorways leading to:\n' + this.doorwaysTo) 
+
+//if current room is room with enemy, also print string about the attack:
+// run attach function with current enemy
+// define enemy with hit points and damage points
+//define player hit points and damage points
+
         console.log('\n ----------------');
     }
 }
@@ -32,12 +36,12 @@ class Room {
 let roomsArray = [
     new Room(
         'Entrance Room of Dungeons', 
-        ' and it is a big and ramp room with broken status all around. \n',
+        ' and it is a big and damp room with broken status all around. \n',
         ['Hallway']
         ),
     new Room(
         'Hallway', 
-        'description player gets when looking around in Hallway',
+        ' and it is a long and dark hallway, dark pools of water on the floor and fungus on the walls',
         ['Entrance Room of Dungeons', 'Chamber']
         ),
     new Room(
@@ -46,7 +50,7 @@ let roomsArray = [
         ['Hallway', 'Portal']
         ),
     
-    new Room('Portal', 'roomView portal'), // portal shouldn't be a room! it doesn't have same functionalities!
+    new Room('Portal', 'roomView portal'), // can portal be a room?doesn't have same functionalities..
     ];
 
 currentRoom = roomsArray[0]; 
@@ -72,7 +76,7 @@ async function gameLoop(currentRoom) {
       choices: initialActionChoices
     });
 
-    // Deal with the selected value
+    // handle the selected value
     console.log('You selected ' + response.value);
     switch(response.value) {
       case 'lookaround':
@@ -100,41 +104,39 @@ async function gameLoop(currentRoom) {
 //__________________________________________________________________
 
 async function roomLoop(currentRoom) {
-    let continueGame = true;
+    continueGame = true;
     
     //these below need to be modidied to that they are flexible for different rooms!
+    // if-sentence to show only options that are suitable for this current room!
     // loop through as many times as this current room HAS items in the doorways-array :)
     const roomChoices = [
-            { title: currentRoom.doorwaysTo[0], value: currentRoom.doorwaysTo[0]},
+          //  { title: currentRoom.doorwaysTo[0], value: currentRoom.doorwaysTo[0]},
+            { title: 'Hallway', value: 'hallway' } //this is hard coding, have it replaced with soft
         ];
-    }
-const response = await prompts({
-    type: 'select',
-    name: 'value',
-    message: 'Which room you want to go to?',
-    choices: roomChoices
-  });
-
-  // Deal with the selected value
-  console.log('You move to ' + response.value);
-  switch(response.value) {
-    case currentRoom.doorwaysTo[0]: //hallway
-        currentRoom = roomsArray[1];
-        continueGame = true;
-        break;
     
-    case 'Hallway':
-        currentRoom = roomsArray[1];
-        break;
-    }    
-    if(continueGame) {
-        gameLoop(currentRoom);
-      }   
-          
+    const roomresponse = await prompts({
+        type: 'select',
+        name: 'value',
+        message: 'Which room you want to go to?',
+        choices: roomChoices
+    });
+
+    // Deal with the selected value
+    console.log('You move to ' + roomresponse.value);
+    switch(roomresponse.value) {
+        case currentRoom.doorwaysTo[0]: //hallway
+            currentRoom = roomsArray[1];
+            continueGame = true;
+            break;
+                
+            case 'hallway':
+            currentRoom = roomsArray[1];
+            break;  
+        }
+        if(continueGame) {
+            gameLoop(currentRoom);
+        }           
 }
-
-
-
 
 //___________________________________________________________________
 process.stdout.write('\033c'); // clear screen on windows
