@@ -1,6 +1,8 @@
 /*
 TO-DO LIST: 
         - define all properties for all rooms.
+        - create attack loop
+        - redefine to print correctly current room when mentioned on string, e.g. lookaround-function
 
     (- LOW priority: method to push new doorways into array, so that it is possible to expand the game)
     (LOW priority:  lookAround-function: loop through different doorway for each row (instead of printing all on one line)
@@ -13,47 +15,93 @@ TO-DO LIST:
 const prompts = require('prompts');
 
 class Room {
-    constructor(name, roomView, doorwaysTo){
+    constructor(name, roomView, doorwaysTo, enemy){
         this.name = name;
         this.roomView = roomView;
         this.doorwaysTo = doorwaysTo; // array of rooms, into which there is access from this room 
+        this.enemy = enemy;
 
     }
     lookAround(){
+
         console.log('----------------');
         console.log('You are in the ' + this.name + this.roomView);
-        console.log('There are doorways leading to:\n' + this.doorwaysTo) 
+        console.log('\nThere are doorways leading to:\n' + this.doorwaysTo) //could clean this by adding a loop to print each doorway
 
-//if current room is room with enemy, also print string about the attack:
-// run attach function with current enemy
-// define enemy with hit points and damage points
-//define player hit points and damage points
+//if current room is room with existing enemy, also print string about the attack:
+    //    console.log('You see ' + this.enemy + ', which attacks player with its' + ) 
+// run attac function with current enemy
 
         console.log('\n ----------------');
     }
 }
+
+class Character {
+    constructor(name, weapon, strenghtPoints, attackPoints, rateOfSuccess){
+        this.name = name;
+        this.weapon = weapon;
+        this.strenghtPoints = strenghtPoints;
+        this.attackPoints = attackPoints;
+        this.rateOfSuccess = rateOfSuccess;
+    }
+}
+
+
+
 //__________________________________________________________________
 let roomsArray = [
     new Room(
-        'Entrance Room of Dungeons', 
+        'Entrance of Dungeons', 
         ' and it is a big and damp room with broken status all around. \n',
-        ['Hallway']
+        ['Hallway'],
+        ' no enemies lurking in this room, you are safe.'
         ),
     new Room(
         'Hallway', 
         ' and it is a long and dark hallway, dark pools of water on the floor and fungus on the walls',
-        ['Entrance Room of Dungeons', 'Chamber']
+        ['Entrance of Dungeons', 'Chamber'],
+        'small sewer rat'
         ),
     new Room(
         'Chamber', 
         'description player gets when looking around in Chamber'
-        ['Hallway', 'Portal']
+        ['Hallway', 'Portal'],
+        'Mighty Dragon'
         ),
     
-    new Room('Portal', 'roomView portal'), // can portal be a room?doesn't have same functionalities..
+    new Room('Portal',
+     '',
+     '',
+     '',
+     ''
+     ), // can portal be a room?doesn't have same functionalities..
     ];
 
-currentRoom = roomsArray[0]; 
+    currentRoom = roomsArray[0]; 
+//___________________________________________________________________
+let charactersArray =  [
+    new Character (
+        'Player',
+        'shiny sword',
+        10,
+        2,
+        0.75
+    ),
+    new Character (
+        'small sewer rat',
+        'sharp teeth',
+        2,
+        1,
+        0.50
+    ),
+    new Character (
+        'Mighty Dragon',
+        'flaming breath and thorns in its tail',
+        4,
+        8,
+        0.90
+    )
+]
 //___________________________________________________________________
 
 async function gameLoop(currentRoom) {
@@ -89,7 +137,7 @@ async function gameLoop(currentRoom) {
         break;
       
       case 'attack':
-        currentRoom.displayInformation();
+        attackLoop(currentRoom);
         break;
       
       case 'exit':
@@ -138,10 +186,16 @@ async function roomLoop(currentRoom) {
         }           
 }
 
+//create attack loop -function
+
+
+
 //___________________________________________________________________
 process.stdout.write('\033c'); // clear screen on windows
 
 console.log('WELCOME TO THE DUNGEONS OF LORD OBJECT ORIENTUS!')
+//testing
+console.log(charactersArray[0].name + ' has ' + charactersArray[0].strenghtPoints + ' strenght and ' + charactersArray[0].rateOfSuccess + ' rate of success in battle.')
 console.log('================================================')
 console.log('You walk down the stairs to the dungeons')
 // testing:
