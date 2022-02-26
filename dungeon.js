@@ -1,40 +1,10 @@
 /*
 TO-DO LIST: 
-        - define all properties for all rooms.
-        - create attack loop
-        - redefine to print correctly current room when mentioned on string, e.g. lookaround-function
-
-    (- LOW priority: method to push new doorways into array, so that it is possible to expand the game)
-    (LOW priority:  lookAround-function: loop through different doorway for each row (instead of printing all on one line)
-)
-    + FIXED! (- why error if I choose same option two times in a row? like look around, and again look around) 
-    + SOLVED! functionw WHICH ROOM YOU WANT TO GO, why it prints also gameloop?
-    ( LOW priority- roomLoop could have option to go back to previous menu)
+  
+ 
 */
 
 const prompts = require('prompts');
-
-class Room {
-    constructor(name, roomView, doorwaysTo, enemy){
-        this.name = name;
-        this.roomView = roomView;
-        this.doorwaysTo = doorwaysTo; // array of rooms, into which there is access from this room 
-        this.enemy = enemy;
-
-    }
-    lookAround(){
-
-        console.log('----------------');
-        console.log('You are in the ' + this.name + this.roomView);
-        console.log('\nThere are doorways leading to:\n' + this.doorwaysTo) //could clean this by adding a loop to print each doorway
-
-//if current room is room with existing enemy, also print string about the attack:
-    //    console.log('You see ' + this.enemy + ', which attacks player with its' + ) 
-// run attac function with current enemy
-
-        console.log('\n ----------------');
-    }
-}
 
 class Character {
     constructor(name, weapon, strenghtPoints, attackPoints, rateOfSuccess){
@@ -44,65 +14,101 @@ class Character {
         this.attackPoints = attackPoints;
         this.rateOfSuccess = rateOfSuccess;
     }
+
+    getEnemyName(){
+        return(this.name);
+    }
+    getWeapon(){
+        return(this.weapon);
+    }
+    getStrenghtPoints(){
+        return(this.strenghtPoints); 
+    }
+    getAttackPoints(){
+        return(this.attackPoints);
+    }
+    getRateOfSuccess(){
+        return(this.rateOfSuccess);
+    }
 }
+//__________________________________________________________________
+let charactersArray =  [
+    new Character (
+        'Player','shiny sword', 10, 2, 0.75),
+    new Character (
+        'Small sewer rat', 'sharp teeth', 2, 1, 0.50),
+    new Character (
+        'Mighty Dragon', 'flaming breath and sharp spikes on its tail', 4, 8, 0.90)
+    ]
+//___________________________________________________________________
+class Room {
+    constructor(name, roomView, doorwaysTo, enemy){
+        this.name = name;
+        this.roomView = roomView;
+        this.doorwaysTo = []; // array of rooms, into which there is access from this room 
+        this.enemyArray = [];
+    }
+    setEnemiesToRooms(characterInput){
+        this.enemyArray.push(characterInput);
+    }
+    setDoorwaysToRooms(roomInput){
+        this.doorwaysTo.push(roomInput);
+    }
+    getRoomName(){
+        return this.roomName;
+    }
+    getDoorwaysTo(){
+        return this.doorwaysTo;
+    }
+    
+    lookAround(){
+        console.log('----------------');
+        console.log('You are in the ' + this.name + this.roomView);
+        console.log('\nThere are doorways leading to:\n' + this.doorwaysTo + "\n")
+       
+       //chech if there is an enemy in this room
+        //if yes, print string about the attack: 
+        if(this.enemyArray.length > 0){     
+            battleFunction(charactersArray[0], this.enemyArray[0]);
+            //console.log(charactersArray[0], );
 
-
-
+        }
+       
+       
+        console.log(' ----------------');
+    }
+}
 //__________________________________________________________________
 let roomsArray = [
     new Room(
         'Entrance of Dungeons', 
-        ' and it is a big and damp room with broken status all around. \n',
-        ['Hallway'],
-        ' no enemies lurking in this room, you are safe.'
+        ' and it is a big and damp room with broken statues all around.',
+        '',
+        ''
         ),
     new Room(
         'Hallway', 
         ' and it is a long and dark hallway, dark pools of water on the floor and fungus on the walls',
-        ['Entrance of Dungeons', 'Chamber'],
-        'small sewer rat'
+        '',
+        ''
         ),
     new Room(
         'Chamber', 
-        'description player gets when looking around in Chamber'
-        ['Hallway', 'Portal'],
-        'Mighty Dragon'
+        'and it is a small chamber, illuminated by glowing portal.',
+        '',
+        ''
         ),
-    
-    new Room('Portal',
-     '',
-     '',
-     '',
-     ''
-     ), // can portal be a room?doesn't have same functionalities..
-    ];
+    new Room(
+        'Glowing Portal', 
+        ' ',
+        '',
+        ''
+        )
+    ];    
 
     currentRoom = roomsArray[0]; 
 //___________________________________________________________________
-let charactersArray =  [
-    new Character (
-        'Player',
-        'shiny sword',
-        10,
-        2,
-        0.75
-    ),
-    new Character (
-        'small sewer rat',
-        'sharp teeth',
-        2,
-        1,
-        0.50
-    ),
-    new Character (
-        'Mighty Dragon',
-        'flaming breath and thorns in its tail',
-        4,
-        8,
-        0.90
-    )
-]
-//___________________________________________________________________
+
 
 async function gameLoop(currentRoom) {
     let continueGame = true;
@@ -133,7 +139,7 @@ async function gameLoop(currentRoom) {
       
       case 'gotoroom':
         roomLoop(currentRoom);
-        continueGame = false; // stops gameloop running!
+        continueGame = false; // stops gameloop running
         break;
       
       case 'attack':
@@ -155,12 +161,15 @@ async function roomLoop(currentRoom) {
     continueGame = true;
     
     //these below need to be modidied to that they are flexible for different rooms!
-    // if-sentence to show only options that are suitable for this current room!
-    // loop through as many times as this current room HAS items in the doorways-array :)
-    const roomChoices = [
-          //  { title: currentRoom.doorwaysTo[0], value: currentRoom.doorwaysTo[0]},
-            { title: 'Hallway', value: 'hallway' } //this is hard coding, have it replaced with soft
-        ];
+    // if-sentence to show only options that are suitable for this current room?
+    // loop through as many times as this current room HAS items in the doorways-array?  
+    
+     let roomChoices = [
+             { title: 'Hallway', value: 'Hallway' }, //this is hard coding, have it replaced with soft
+             { title: 'Chamber', value: 'Chamber' },
+             { title: 'Glowing Portal', value: 'Glowing Portal' },
+             { title: 'Entrance', value: 'Entrance' }
+         ];
     
     const roomresponse = await prompts({
         type: 'select',
@@ -171,31 +180,47 @@ async function roomLoop(currentRoom) {
 
     // Deal with the selected value
     console.log('You move to ' + roomresponse.value);
-    switch(roomresponse.value) {
-        case currentRoom.doorwaysTo[0]: //hallway
-            currentRoom = roomsArray[1];
-            continueGame = true;
-            break;
-                
-            case 'hallway':
-            currentRoom = roomsArray[1];
-            break;  
+    switch(roomresponse.value) { 
+        case 'Entrance':
+        currentRoom = roomsArray[0];
+        break;
+
+        case 'Hallway':
+        currentRoom = roomsArray[1];
+        break;
+
+        case 'Chamber':
+        currentRoom = roomsArray[2];
+        break;  
+
+        case 'Glowing Portal':
+        currentRoom = roomsArray[3];
+        break;
         }
+
         if(continueGame) {
             gameLoop(currentRoom);
         }           
 }
 
-//create attack loop -function
-
-
-
 //___________________________________________________________________
 process.stdout.write('\033c'); // clear screen on windows
 
+// enemies are set to rooms as the game starts:
+roomsArray[1].setEnemiesToRooms(charactersArray[1]); 
+roomsArray[2].setEnemiesToRooms(charactersArray[2]);
+
+//doorways to other rooms are defined as game starts:
+roomsArray[0].setDoorwaysToRooms(roomsArray[1].name);
+roomsArray[1].setDoorwaysToRooms(roomsArray[0].name);
+roomsArray[1].setDoorwaysToRooms(roomsArray[2].name);
+roomsArray[2].setDoorwaysToRooms(roomsArray[1].name);
+roomsArray[2].setDoorwaysToRooms(roomsArray[3].name);
+
+
 console.log('WELCOME TO THE DUNGEONS OF LORD OBJECT ORIENTUS!')
 //testing
-console.log(charactersArray[0].name + ' has ' + charactersArray[0].strenghtPoints + ' strenght and ' + charactersArray[0].rateOfSuccess + ' rate of success in battle.')
+console.log(charactersArray[0].name + ' strenght: ' + charactersArray[0].strenghtPoints + ', rate of success in battle: ' + charactersArray[0].rateOfSuccess);
 console.log('================================================')
 console.log('You walk down the stairs to the dungeons')
 // testing:
