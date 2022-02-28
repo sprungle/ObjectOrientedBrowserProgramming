@@ -1,9 +1,6 @@
 /*
 Improvements/TO-DO LIST: 
   - how to exit program , also when player strenght is zero?
-  - loop enemy array in case there are more than one enemy in the room
-  - doorwaysTo-array and roomChoises-array could be the one and same
-
  
 */
 
@@ -17,28 +14,32 @@ class Character {
         this.attackPoints = attackPoints;
         this.rateOfSuccess = rateOfSuccess;
     }
-}
-//__________________________________________________________________
+   }
+
 let charactersArray =  [
     new Character (
         'Player','shiny sword', 10, 2, 0.75),
     new Character (
         'Small sewer rat', 'sharp teeth', 2, 1, 0.50),
-//test: 'Small sewer rat', 'sharp teeth', 2, 10, 1),
     new Character (
         'Mighty Dragon', 'flaming breath and sharp spikes on its tail', 4, 8, 0.90)
     ]
-//___________________________________________________________________
+
 class Room {
-    constructor(name, roomView, doorwaysTo, enemyArray, actionChoices){
+    constructor(name, roomView, doorwaysTo, enemyArray, actionChoices, doorChoises, enemyChoices){
         this.name = name;
         this.roomView = roomView;
         this.doorwaysTo = []; 
         this.enemyArray = [];
         this.actionChoices = [];
+        this.doorChoises = [];
+        this.enemyChoices = [];
     }
     setEnemiesToRooms(characterInput){
         this.enemyArray.push(characterInput);
+    }
+    removeEnemy(characterInput){
+        this.enemyArray.splice(characterInput);
     }
     setDoorwaysToRooms(roomInput){
         this.doorwaysTo.push(roomInput);
@@ -46,16 +47,29 @@ class Room {
     setActionChoices(actionInput){
         this.actionChoices.push(actionInput);
     }
+    setDoorChoises(doorInput){
+        this.doorChoises.push(doorInput);
+    }
+    setEnemyChoices(enemyInput){
+        this.enemyChoices.push(enemyInput);
+    }
+
     lookAround(){
         console.log('----------------');
         console.log('You are in the ' + this.name + this.roomView);
-        console.log('\nThere are doorways leading to:\n' + this.doorwaysTo + "\n")
-       
+        console.log('\nThere are doorways leading to:');
+            for(let i=0; i < this.doorwaysTo.length; i++){
+            console.log(this.doorwaysTo[i].name);
+
+        };
        //chech if there is an enemy in this room
-        if(this.enemyArray.length > 0){
-            this.battleFunction(charactersArray[0], this.enemyArray[0]);  
-        }    
-        // (missing feature: loop enemy array in case there are more than one enemy in the room)
+         if(this.enemyArray.length > 0){
+             for(let i=0; i<this.enemyArray.length; i++){            
+             this.battleFunction(charactersArray[0], this.enemyArray[i]); 
+             } 
+         }   
+       // this.battleFunction(charactersArray[0], this.enemyArray[i]); 
+
         console.log(' ----------------');
     }
 
@@ -65,61 +79,68 @@ class Room {
         let successMultiplier = 20;    
         let randomNumber = ((Math.floor(Math.random() * (max - min) + min)));
     
-        console.log("You see a " + opponent.name);
+        console.log("\nYou see a " + opponent.name);
         console.log(opponent.name + " attacks " + playerOne.name + " with its " + opponent.weapon);
-    
-// test:   console.log(opponent.rateOfSuccess*successMultiplier);
-// test:   console.log("Random number is:" + randomNumber);
     
         if(randomNumber <= (opponent.rateOfSuccess*successMultiplier)){
             console.log(opponent.name + " hits " + playerOne.name + ", you lose " + opponent.attackPoints + " points");
             playerOne.strenghtPoints -= opponent.attackPoints;
             if(playerOne.strenghtPoints < 1){
                 console.log("You lost, game is over");
-            //how to exit program?
+            //missing feature: how to exit program
             }
         }
         else {
-            console.log(opponent.name + " attack did not succeed.");
+            console.log(opponent.name + " attack misses.");
+        }
+    }
+
+    attackFunction(enemy){
+        let min = Math.ceil(1);
+        let max = Math.floor(21);
+        let successMultiplier = 20;    
+        let randomNumber = ((Math.floor(Math.random() * (max - min) + min)));
+
+        console.log("You bravely attack " + enemy.name + " with your " + charactersArray[0].weapon);
+        
+        if (randomNumber <= (charactersArray[0].rateOfSuccess*successMultiplier)){
+            console.log(charactersArray[0].name + " hits " + enemy.name + " with " + charactersArray[0].attackPoints + " points");
+            enemy.strenghtPoints -= charactersArray[0].attackPoints;
+            if(enemy.strenghtPoints < 1){
+                console.log(enemy.name + " is hit and destoryed!");
+                this.enemyArray.splice(this.enemy);
+            }
+        }
+        else {
+            console.log(charactersArray[0].name + " attack misses.");
         }
     }
 }
-//__________________________________________________________________
+
 let roomsArray = [
     new Room(
-        'Entrance of Dungeons', 
+        'Entrance of Dungeons',
         ' and it is a big and damp room with broken statues all around.',
-        '',
-        '',
-        ''),
+        ),
     new Room(
-        'Hallway', 
+        'Hallway',
         ' and it is a long and dark hallway, dark pools of water on the floor and fungus on the walls',
-        '',
-        '',
-        ''),
+        ),
     new Room(
-        'Chamber', 
+        'Chamber',
         ' and it is a small chamber, illuminated by glowing portal.',
-        '',
-        '',
-        ''),
+        ),
     new Room(
-        'Glowing Portal', 
-        ' ',
-        '',
-        '',
-        ''),
+        'Glowing Portal',
+        ),
     ];    
 
 //___________________________________________________________________
 async function gameLoop(currentRoom) {
     let continueGame = true;
-       
     const initialActionChoices = currentRoom.actionChoices;
 
-    // Show the list of options for user.
-    // The execution does not proceed until user selects an option.
+    // Show list of options
     const response = await prompts({
       type: 'select',
       name: 'value',
@@ -140,7 +161,8 @@ async function gameLoop(currentRoom) {
         break;
       
       case 'attack':
-        attackLoop(currentRoom);
+        attackLoop(currentRoom, currentRoom.enemyArray);
+        continueGame = false;
         break;
       
       case 'exit':
@@ -155,14 +177,8 @@ async function gameLoop(currentRoom) {
 //__________________________________________________________________
 
 async function roomLoop(currentRoom) {
-    continueGame = true;
-    
-     const roomChoices = [
-             { title: 'Hallway', value: 'Hallway' }, //this is hard coding, have it replaced with soft
-             { title: 'Chamber', value: 'Chamber' },
-             { title: 'Glowing Portal', value: 'Glowing Portal' },
-             { title: 'Entrance', value: 'Entrance' }
-         ];
+    continueGame = true;    
+    const roomChoices = currentRoom.doorChoises;
     
     const roomresponse = await prompts({
         type: 'select',
@@ -171,7 +187,6 @@ async function roomLoop(currentRoom) {
         choices: roomChoices
     });
 
-    // Deal with the selected value
     console.log('You move to ' + roomresponse.value);
     switch(roomresponse.value) { 
         case 'Entrance':
@@ -187,7 +202,7 @@ async function roomLoop(currentRoom) {
         break;  
 
         case 'Glowing Portal':
-        console.log("Congratulations! You made it through the dungeons!");
+        console.log("   Congratulations! You made it through the dungeons!\n********************************************************");
         continueGame= false;
         break;
         }
@@ -196,25 +211,64 @@ async function roomLoop(currentRoom) {
             gameLoop(currentRoom);
         }           
 }
-
 //___________________________________________________________________
+async function attackLoop(currentRoom) {
+    let continueGame = true;
+    const enemyChoices = currentRoom.enemyChoices;
+
+    const response = await prompts({
+      type: 'select',
+      name: 'value',
+      message: 'Which enemy you want to attack?',
+      choices: enemyChoices
+    });
+
+    console.log('You selected ' + response.value);
+    switch(response.value) {
+      case 'smallsewerrat':
+        enemyToAttack = charactersArray[1];
+        currentRoom.attackFunction(enemyToAttack);
+        break;
+      
+      case 'mightydragon':
+        enemyToAttack = charactersArray[2];
+        currentRoom.attackFunction(enemyToAttack);       
+        break;
+    }
+    
+    if(continueGame) {
+      gameLoop(currentRoom);
+    }    
+}
+//__________________________________________________________________
 process.stdout.write('\033c'); // clear screen on windows
 
 currentRoom = roomsArray[0]; 
 
 // enemies are set to rooms as the game starts:
-roomsArray[1].setEnemiesToRooms(charactersArray[1]); 
+roomsArray[1].setEnemiesToRooms(charactersArray[1]);
 roomsArray[2].setEnemiesToRooms(charactersArray[2]);
+roomsArray[2].setEnemiesToRooms(charactersArray[1]);
+
+roomsArray[1].setEnemyChoices({ title: 'Small sewer rat', value: 'smallsewerrat' }); 
+roomsArray[2].setEnemyChoices({title: 'Mighty dragon', value: 'mightydragon'});
+roomsArray[2].setEnemyChoices({ title: 'Small sewer rat', value: 'smallsewerrat' }); 
+
 
 //doorways to other rooms are defined as game starts:
-roomsArray[0].setDoorwaysToRooms(roomsArray[1].name);
-roomsArray[1].setDoorwaysToRooms(roomsArray[0].name);
-roomsArray[1].setDoorwaysToRooms(roomsArray[2].name);
-roomsArray[2].setDoorwaysToRooms(roomsArray[1].name);
-roomsArray[2].setDoorwaysToRooms(roomsArray[3].name);
+roomsArray[0].setDoorwaysToRooms(roomsArray[1]);
+roomsArray[1].setDoorwaysToRooms(roomsArray[0]);
+roomsArray[1].setDoorwaysToRooms(roomsArray[2]);
+roomsArray[2].setDoorwaysToRooms(roomsArray[1]);
+roomsArray[2].setDoorwaysToRooms(roomsArray[3]);
+
+roomsArray[0].setDoorChoises({ title: 'Hallway', value: 'Hallway' });
+roomsArray[1].setDoorChoises({ title: 'Entrance', value: 'Entrance' });
+roomsArray[1].setDoorChoises({ title: 'Chamber', value: 'Chamber' });
+roomsArray[2].setDoorChoises({ title: 'Hallway', value: 'Hallway' });
+roomsArray[2].setDoorChoises({ title: 'Glowing Portal', value: 'Glowing Portal' });
 
 // action choises for each room are defined as the game starts: 
-
 roomsArray[0].setActionChoices({ title: 'Look around', value: 'lookaround' });
 roomsArray[1].setActionChoices({ title: 'Look around', value: 'lookaround' });
 roomsArray[2].setActionChoices({ title: 'Look around', value: 'lookaround' });
@@ -230,21 +284,12 @@ roomsArray[0].setActionChoices({ title: 'Exit game', value: 'exitgame' });
 roomsArray[1].setActionChoices({ title: 'Exit game', value: 'exitgame' });
 roomsArray[2].setActionChoices({ title: 'Exit game', value: 'exitgame' });
 
-
-
 //testing
 console.log(charactersArray[0].name + ' strenght: ' + charactersArray[0].strenghtPoints + ', rate of success in battle: ' + charactersArray[0].rateOfSuccess);
 //console.log(roomsArray[0].actionChoices[0].value);
-console.log(roomsArray[0].doorwaysTo[0]);
-
-
-
+//console.log(roomsArray[0].doorwaysTo[0].value);
 
 console.log('WELCOME TO THE DUNGEONS OF LORD OBJECT ORIENTUS!')
 console.log('================================================')
 console.log('You walk down the stairs to the dungeons')
-// testing:
-//console.log(currentRoom.name);
-//currentRoom.lookAround(); //toimii täällä, muttei gameloopissa..
-
 gameLoop(currentRoom);
