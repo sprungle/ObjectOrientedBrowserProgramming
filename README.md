@@ -1,2 +1,2 @@
 # ObjectOrientedBrowserProgramming
-Two exercises for grading.
+One exercise for grading.
