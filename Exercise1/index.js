@@ -87,6 +87,7 @@ class Room  extends nonFunctionalRoom {
             playerOne.strenghtPoints -= opponent.attackPoints;
             if(playerOne.strenghtPoints < 1){
                 console.log("You lost, game is over");
+                process.exit();
             //missing feature: how to exit program
             }
         }
