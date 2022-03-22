@@ -12,15 +12,17 @@ HOW TO RUN THIS?
 
 To run this program: 
 
-install npm 
+1. Progam runs in Node.js, so install the software from https://nodejs.org/en/download/
+
+2. Install Node Package Manager, command "npm install"
 
 and 
 
-clone index.js (saved under Exercise1) to same repository. 
+3. Clone index.js to that same repository. 
 
-Run the program with command "node index.js"
+4. Run the program with command "node index.js"
 
-Alternatively (instead of installing npm) you can clone node_modules and package-lock.json (saved under Exercise1).
+ALTERNATIVELY (instead of installing npm) you can clone "node_modules" and "package-lock.json" (saved under Exercise1).
 
 HOW WAS THE PROJECT?
 
